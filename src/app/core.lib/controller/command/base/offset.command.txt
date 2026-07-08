@@ -1,0 +1,64 @@
+import { BaseCommand } from "src/app/core.lib/controller/command/base.command";
+import { Prompt } from "src/app/core.lib/controller/command/prompt";
+import { Line2d } from "src/app/core.lib/model/geometry/line/line2d";
+import { v4 as uuid4 } from 'uuid';
+import { UnPointPickLock } from "src/app/core.lib/service/interactive/lock";
+import { IEntity } from "src/app/core.lib/model/entity/i.entity";
+import { Point } from "src/app/core.lib/model/geometry/point/point";
+import { IThing } from "src/app/core.lib/model/thing/i.thing";
+import { CommandStep } from "../command.step";
+import { CommandStepType } from "../command.step.type";
+import { container } from "tsyringe";
+import { GlobalDatabase } from "src/app/core.lib/data/global.database";
+import { SetConfigType } from "src/app/core.lib/set.config.type";
+import { Curve2dThing } from "src/app/core.lib/model/thing/base/curve2d.thing";
+import { Point2d } from "src/app/core.lib/model/geometry/point/point2d";
+
+export class OffsetCommand extends BaseCommand {
+
+    public override Name: string = "Offset";
+
+    public override Description = "线段偏移";
+
+    public override Initialize(): void {
+        const step1 = new CommandStep(0, CommandStepType.Number, "偏移距离", [1000]);
+        const step2 = new CommandStep(1, CommandStepType.Entity, "选择线段");
+        const step3 = new CommandStep(2, CommandStepType.Point, "偏移位置");
+
+        this.AddStep(step1);
+        this.AddStep(step2);
+        this.AddStep(step3);
+        this.currentStep = step2;
+    }
+
+    protected override  CreateThing(...args: (number[] | Point | IEntity[])[]): IThing[]> {
+
+        if (args.length !== 3)
+            return [];
+
+        const distance = (args[0] as number[])[0];
+        const entity = (args[1] as IEntity[])[0];
+        const point = args[2] as Point;
+
+        const global = container.resolve<GlobalDatabase>(SetConfigType.GlobalDatabase);
+        const things =  global.GetThings(entity.ThingId);
+        let p = new Point2d(point.X, point.Y);
+
+        if (things.length === 0)
+            return []
+
+        const thing = things[0];
+        if (!(thing instanceof Curve2dThing))
+            return []
+
+        if (entity.Geometry! instanceof Line2d) {
+            const line = entity.Geometry!;
+            const m = line.GetMatrix("Center")!;
+            p = p.Transform(m);
+        }
+    }
+
+    protected override  ModifyThing(...args: (number[] | Point | IEntity[])[]): IThing[]> {
+        return [];
+    }
+}

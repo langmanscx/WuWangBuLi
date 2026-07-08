@@ -1,0 +1,100 @@
+.building-box {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.building-box-content {
+    width: 100%;
+    height: 100%;
+    margin: 2vh;
+}
+
+.standard-group {
+    display: block;
+}
+
+details {
+    color: white;
+    font-weight: 200;
+    margin: 2vh;
+}
+
+p {
+    text-indent: 2em;
+}
+
+p:hover {
+    background-color: rgba(255, 159, 31, 0.5);
+}
+
+.layer-label {
+    display: inline;
+    color: white;
+    font-family: "宋体", "Arial", sans-serif;
+    font-size: 16px;
+}
+
+.layer-input {
+    margin-left: 1vh;
+    width: 160px;
+    display: inline;
+    color: white;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    font-family: "宋体", "Arial", sans-serif;
+    font-size: 16px;
+}
+
+.building-box-fold {
+    height: 45vh;
+    width: 10px;
+    box-shadow: 0 0 0 0 rgba(0, 23, 54, 0.5);
+}
+
+
+.building-box-unfold {
+    height: 45vh;
+    width: 15vw;
+    box-shadow: -2px 2px 5px 0px rgba(0, 23, 54, 0.5);
+}
+
+.add-button {
+    display: inline-block;
+    margin-left: 50%;
+    color: white;
+    font-size: 28px;
+    cursor: auto;
+}
+
+.add-button:hover {
+    color: rgb(31, 31, 127);
+    text-shadow: -2px -2px 1px rgb(2, 114, 184);
+    cursor: pointer;
+}
+
+.add-button:active {
+    color: black;
+    text-shadow:  1px 1px 1px white;
+    cursor: pointer;
+}
+
+.delete-button {
+    display: inline-block;
+    color: white;
+    font-size: 20px;
+    cursor: auto;
+}
+
+.delete-button:hover {
+    color: rgb(127, 31, 31);
+    text-shadow: -2px -2px 1px rgb(2, 114, 184);
+    cursor: pointer;
+}
+
+.delete-button:active {
+    color: black;    
+    text-shadow:  1px 1px 1px white;
+    cursor: pointer;
+}

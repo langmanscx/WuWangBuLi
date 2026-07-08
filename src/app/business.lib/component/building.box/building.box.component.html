@@ -1,0 +1,16 @@
+<div class="building-box" [ngClass]="{'building-box-unfold': !Flod, 'building-box-fold': Flod}">
+  <div class="building-box-content">
+
+    <div class="standard-group" *ngFor="let item of Data">
+      <label class="layer-label">标准层: </label>
+      <input class="layer-input" type="text" [(ngModel)]="item.Name" placeholder="1；1,2,3；1~3">
+      <strong class="delete-button" (click)="OnDelete(item.Id)">x</strong>
+      <details open>
+        <summary>包含以下自然层:</summary>
+        <p *ngFor="let detail of item.Details">{{detail}}</p>
+      </details>
+    </div>
+    <strong class="add-button" (click)="OnAdd()">+</strong>
+
+  </div>
+</div>

@@ -1,0 +1,114 @@
+import { BaseCommand } from "src/app/core.lib/controller/command/base.command";
+import { ICommand } from "src/app/core.lib/controller/command/i.command";
+import { OperateState } from "src/app/core.lib/controller/command/operate.state";
+import { PointOperate } from "src/app/core.lib/controller/command/point.operate";
+import { Prompt } from "src/app/core.lib/controller/command/prompt";
+import { WallThing } from "../model/thing/wall.thing";
+import { Point2d } from "src/app/core.lib/model/geometry/point/point2d";
+import { Point3d } from "src/app/core.lib/model/geometry/point/point3d";
+import { Point } from "src/app/core.lib/data/geometry/point/point";
+import { Line2d } from "src/app/core.lib/model/geometry/line/line2d";
+import { WallDescription } from "../model/thing/wall.description";
+import { v4 as uuid4 } from 'uuid';
+import { UnPointPickLock } from "src/app/core.lib/service/interactive/lock";
+type P = Point | Point2d | Point3d
+
+export class WallCommand extends BaseCommand implements ICommand {
+
+    protected override name: string = "Wall";
+
+    private from: P | undefined = undefined;
+
+    private to: P | undefined = undefined;
+
+    private thickness: number = 100;
+
+    private height: number = 2800;
+
+    public override Run(loop: boolean = true): void {
+        UnPointPickLock();
+        this.Step1(loop);
+    }
+
+    private Step1(loop: boolean) {
+
+        Prompt("输入墙体起点");
+        this.StepLocks.push(false);
+        let operate = new PointOperate();
+
+        const sub = operate.StateObservable.subscribe( state => {
+            if (state === OperateState.Finish) {
+                if (this.StepLocks[0])
+                    return;
+
+                this.from = operate.Result;
+                this.StepLocks[0] = true;
+                this.Step2(loop);
+            }
+            else if (state === OperateState.Cancel) {
+                this.Close();
+                this.InteractiveDrawing();
+                this.finishSubject.next(true);
+            }
+        });
+
+        this.Subscriptions.push(sub);
+    }
+
+    private Step2(loop: boolean) {
+
+        Prompt("输入墙体落点");
+        this.StepLocks.push(false);
+        let operate = new PointOperate();
+
+        const sub = operate.StateObservable.subscribe( state => {
+            if (state === OperateState.Wait) {
+                if (this.StepLocks[1])
+                    return;
+
+                this.to = operate.Result;
+                const wall = this.CreateWall();
+
+                if (wall !== undefined)
+                    this.InteractiveDrawing(wall);
+            }
+            else if (state === OperateState.Finish) {
+                const wall = this.CreateWall();
+
+                if (wall !== undefined)
+                    this.Submit("Add", wall);
+
+                if (!loop || this.to === undefined) {
+                    this.Close();
+                    this.finishSubject.next(true);
+                }
+                else {
+                    this.from = this.to;
+                    Prompt("输入墙体落点");
+                    operate = new PointOperate();
+                }
+            }
+            else if (state === OperateState.Cancel) {
+                this.Close();
+                this.InteractiveDrawing();
+                this.finishSubject.next(true);
+            }
+        });
+
+        this.Subscriptions.push(sub);
+    }
+
+    /**
+     * 生成墙体
+     * @returns 
+     */
+    private CreateWall(): WallThing | undefined {
+        if (this.from === undefined || this.to === undefined) {
+            return undefined;
+        }
+
+        var geometry = new Line2d(this.from.X, this.from.Y, this.to.X, this.to.Y);
+        var description = new WallDescription(geometry, this.thickness, this.height);
+        return new WallThing(uuid4(), "墙体", description);
+    }
+}

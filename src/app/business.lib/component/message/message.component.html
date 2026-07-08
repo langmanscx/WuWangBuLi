@@ -1,0 +1,13 @@
+<div class="message-input">
+  <div class="prompt">
+    <p class="command-name">{{Command? Command.Description:"输入命令" }}:</p>
+    <p class="command-prompt">{{Command? Command.Message:"" }}</p>
+  </div>
+  <div class="input-box">
+    <input class="input-content" type="text" [(ngModel)]="CurrentInput" placeholder={{Placeholder}}
+      (keydown)="OnKey($event)">
+  </div>
+</div>
+<div class="message-note">
+  <!-- <blockquote *ngFor="let m of MessageList">{{m}}</blockquote> -->
+</div>

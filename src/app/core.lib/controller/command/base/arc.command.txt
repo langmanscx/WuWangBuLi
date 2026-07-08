@@ -1,0 +1,314 @@
+import { BaseCommand } from "src/app/core.lib/controller/command/base.command";
+import { ICommand } from "src/app/core.lib/controller/command/i.command";
+import { OperateState } from "src/app/core.lib/controller/command/operate.state";
+import { PointOperate } from "src/app/core.lib/controller/command/point.operate";
+import { Prompt } from "src/app/core.lib/controller/command/prompt";
+import { Point2d } from "src/app/core.lib/model/geometry/point/point2d";
+import { Line2d } from "src/app/core.lib/model/geometry/line/line2d";
+import { v4 as uuid4 } from 'uuid';
+import { UnPointPickLock } from "src/app/core.lib/service/interactive/lock";
+import { Curve2dThing } from "src/app/core.lib/model/thing/base/curve2d.thing";
+import { GetCurrentLayer } from "src/app/core.lib/helper/get.layer";
+import { Color } from "src/app/core.lib/model/other/color";
+import { Arc2d } from "src/app/core.lib/model/geometry/line/arc2d";
+import { Curve2dDescription } from "src/app/core.lib/model/thing/base/curve2d.description";
+import { TypeOperate } from "../operate/type.operate";
+import { NumberOperate } from "../number.operate";
+import { Point } from "src/app/core.lib/model/geometry/point/point";
+import { CommandMessageItem } from "../command.message.item";
+
+export class ArcCommand extends BaseCommand implements ICommand {
+
+    protected override name: string = "Arc";
+
+    public override Description = "绘制弧";
+
+    private from: Point | undefined = undefined;
+
+    private to: Point | undefined = undefined;
+
+    private p3: Point | undefined = undefined;
+
+    private type: "弦高构造弧" | "弦半径构造弧" | "三点构造弧" = "弦高构造弧";
+
+    private radius: number | undefined = undefined;
+
+    private height: number | undefined = undefined;
+
+    private arcs: Arc2d[] = [];
+
+    public override MessageSet(): void {
+        this.commandMessage.CommandName = "绘制圆弧";
+        this.commandMessage.AddAllBranchPrompt("圆心半径圆弧", "弦高圆弧", "三点圆弧");
+
+        const branch3: CommandMessageItem[] = [];
+        branch3.push(new CommandMessageItem(1, "弧起点", "Point"));
+        branch3.push(new CommandMessageItem(2, "弧终点", "Point"));
+        branch3.push(new CommandMessageItem(3, "弧中的点", "Point"));
+        this.commandMessage.AddBranch(2, branch3);
+
+        const branch2: CommandMessageItem[] = [];
+        branch2.push(new CommandMessageItem(1, "弦起点", "Point"));
+        branch2.push(new CommandMessageItem(2, "弦终点", "Point"));
+        branch2.push(new CommandMessageItem(3, "弦高", "Number"));
+        branch2.push(new CommandMessageItem(4, "选择", "Type"));
+        this.commandMessage.AddBranch(2, branch2);
+
+        const branch1: CommandMessageItem[] = [];
+        branch1.push(new CommandMessageItem(1, "圆心", "Point"));
+        branch1.push(new CommandMessageItem(2, "半径", "Number"));
+        branch1.push(new CommandMessageItem(3, "起始角", "Number"));        
+        branch1.push(new CommandMessageItem(4, "终止角", "Number"));        
+        branch1.push(new CommandMessageItem(5, "起始角", "Boolean"));
+        this.commandMessage.AddBranch(1, branch1);
+    }
+    
+    public override Run(loop: boolean = true): void {
+        super.Run(loop);
+        UnPointPickLock();
+        this.Step1();
+    }
+
+    private Step1() {
+
+        Prompt("输入弦起点");
+        this.StepLocks.push(false);
+        let operate = new PointOperate();
+
+        const sub = operate.StateObservable.subscribe( state => {
+            if (this.StepLocks[0])
+                return;
+
+            if (state === OperateState.Finish) {
+                this.from = operate.Result;
+                this.StepLocks[0] = true;
+                this.Step2();
+            }
+            else if (state === OperateState.Cancel) {
+                this.Close();
+                this.DrawingByThing();
+                this.finishSubject.next(true);
+            }
+        });
+
+        this.Subscriptions.push(sub);
+    }
+
+    private Step2() {
+
+        Prompt("输入弦落点");
+        this.StepLocks.push(false);
+        let operate = new PointOperate();
+
+        const sub = operate.StateObservable.subscribe( state => {
+            if (this.StepLocks[1])
+                return;
+
+            if (state === OperateState.Wait) {
+                this.to = operate.Result;
+                const line =  this.CreateLineThing();
+
+                if (line !== undefined)
+                    this.DrawingByThing(line);
+            }
+            else if (state === OperateState.Finish) {
+                this.to = operate.Result;
+                const line =  this.CreateLineThing();
+
+                if (line !== undefined)
+                    this.DrawingByThing(line);
+
+                this.StepLocks[1] = true;
+                this.Step3();
+            }
+            else if (state === OperateState.Cancel) {
+                this.Close();
+                this.DrawingByThing();
+                this.finishSubject.next(true);
+            }
+        });
+
+        this.Subscriptions.push(sub);
+    }
+
+    private Step3() {
+        Prompt("选择构造方式：1.弦高构造弧，2.弦半径构造弧，3.三点构造弧");
+        this.StepLocks.push(false);
+        let operate = new TypeOperate();
+
+        const sub = operate.StateObservable.subscribe( state => {
+            if (this.StepLocks[2])
+                return;
+
+            if (state === OperateState.Finish) {
+
+                if (operate.Result === 1)
+                    this.type = "弦高构造弧";
+                else if (operate.Result === 2)
+                    this.type = "弦半径构造弧";
+                else
+                    this.type = "三点构造弧";
+
+                this.StepLocks[2] = true;
+                this.Step4();
+            }
+            else if (state === OperateState.Cancel) {
+                this.Close();
+                this.DrawingByThing();
+                this.finishSubject.next(true);
+            }
+        });
+
+        this.Subscriptions.push(sub);
+    }
+
+    private Step4() {
+        if (this.type === "三点构造弧") {
+            Prompt("输入第三个点");
+            this.StepLocks.push(false);
+            let operate = new PointOperate();
+
+            const sub = operate.StateObservable.subscribe( state => {
+                if (this.StepLocks[3])
+                    return;
+
+                if (state === OperateState.Finish) {
+                    this.p3 = operate.Result;
+                     this.CreateArc();
+                    const things =  this.CreateArcThings();
+
+                    if (things.length > 0)
+                        this.Submit("Add", things[0]);
+
+                    this.Close();
+                    this.DrawingByThing();
+                    this.finishSubject.next(true);
+                }
+                else if (state === OperateState.Cancel) {
+                    this.Close();
+                    this.DrawingByThing();
+                    this.finishSubject.next(true);
+                }
+            });
+
+            this.Subscriptions.push(sub);
+        }
+        else {
+            const promptContent = this.type === "弦半径构造弧" ? "输入半径" : "输入弦高";
+            Prompt(promptContent);
+            this.StepLocks.push(false);
+            let operate = new NumberOperate();
+
+            const sub = operate.StateObservable.subscribe( state => {
+                if (this.StepLocks[3])
+                    return;
+
+                if (state === OperateState.Finish) {
+                    if (this.type === "弦半径构造弧")
+                        this.radius = operate.Result[0];
+                    else
+                        this.height = operate.Result[0];
+
+                     this.CreateArc();
+                    const things =  this.CreateArcThings();
+
+                    this.DrawingByThing(...things);
+                    this.StepLocks[3] = true;
+                    this.Step5();
+                }
+                else if (state === OperateState.Cancel) {
+                    this.Close();
+                    this.DrawingByThing();
+                    this.finishSubject.next(true);
+                }
+            });
+
+            this.Subscriptions.push(sub);
+        }
+    }
+
+    private Step5() {
+        Prompt("选择需要的：1.绿色，2.洋红");
+        this.StepLocks.push(false);
+        let operate = new TypeOperate();
+
+        const sub = operate.StateObservable.subscribe( state => {
+            if (this.StepLocks[2])
+                return;
+
+            if (state === OperateState.Finish) {
+                const things =  this.CreateArcThings();
+                const thing = operate.Result === 1 ? things[0] : things[1];
+                this.Submit("Add", thing);
+
+                this.Close();
+                this.DrawingByThing();
+                this.finishSubject.next(true);
+            }
+            else if (state === OperateState.Cancel) {
+                this.Close();
+                this.DrawingByThing();
+                this.finishSubject.next(true);
+            }
+        });
+
+        this.Subscriptions.push(sub);
+    }
+
+    private  CreateArc() {
+
+        if (this.from !== undefined && this.to !== undefined) {
+            const f = new Point2d(this.from.X, this.from.Y);
+            const t = new Point2d(this.to.X, this.to.Y);
+
+            if (this.type === "弦半径构造弧" && this.radius !== undefined)
+                this.arcs = Arc2d.FromChordRadius(f, t, this.radius);
+
+            if (this.type === "弦高构造弧" && this.height !== undefined)
+                this.arcs = Arc2d.FromChordHeight(f, t, this.height);
+
+            if (this.type === "三点构造弧" && this.p3 !== undefined) {
+                const p = new Point2d(this.p3.X, this.p3.Y);
+                this.arcs = [new Arc2d(f, p, t)];
+            }
+        }
+    }
+
+    /**
+     * 生成圆弧物体
+     * @returns 
+     */
+    private  CreateArcThings(): Curve2dThing[]> {
+        const result: Curve2dThing[] = [];
+
+        const layer =  GetCurrentLayer();
+        for (let i = 0; i < this.arcs.length; i++) {
+            const color = i == 0 ? Color.Green() : Color.Magenta();
+            const geometry = this.arcs[i];
+            const description = new Curve2dDescription(geometry, color.ToColorString(), layer.Id);
+            const thing = new Curve2dThing(uuid4(), "圆弧", description);
+            result.push(thing);
+        }
+
+        return result;
+    }
+
+    /**
+     * 生成线段物体
+     * @returns 
+     */
+    private  CreateLineThing(): Curve2dThing | undefined> {
+        if (this.from === undefined || this.to === undefined) {
+            return undefined;
+        }
+
+        const layer =  GetCurrentLayer();
+        let color = Color.FromColorString(layer.Color);
+        if (color === undefined)
+            color = Color.White();
+
+        var geometry = new Line2d(this.from.X, this.from.Y, this.to.X, this.to.Y);
+        var description = new Curve2dDescription(geometry, color.ToColorString(), layer.Id);
+        return new Curve2dThing(uuid4(), "直线段", description);
+    }
+}

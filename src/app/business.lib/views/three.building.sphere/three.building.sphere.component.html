@@ -1,0 +1,12 @@
+<div>
+  <canvas></canvas>
+  <app-building-box class="building-box"></app-building-box>
+  <input class="clipping-up-box" type="checkbox" [(ngModel)]="UpShow" (input)="OnClippingReset()">
+  <input class="clipping-front-box" type="checkbox" [(ngModel)]="FrontShow" (input)="OnClippingReset()">
+  <input type="range" class="clipping-up" [ngClass]=" {'clipping-up-hide':
+  !UpShow, 'clipping-up-visible' : UpShow}" min="0" max="100" step="1" value="0" [(ngModel)]="ClippingUp"
+    (input)="OnClippingChange()">
+  <input type="range" class="clipping-front" [ngClass]=" {'clipping-front-hide':
+  !FrontShow, 'clipping-front-visible' : FrontShow}" min="0" max="100" step="1" value="0" [(ngModel)]="ClippingFront"
+    (input)="OnClippingChange()">
+</div>

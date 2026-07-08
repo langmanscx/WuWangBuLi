@@ -1,0 +1,19 @@
+div {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;   
+}
+
+div:hover {
+    border-top: 2px solid rgb(255, 255, 255);
+}
+
+
+.list-fold {
+    height: 10px;
+}
+
+
+.list-unfold {
+    height: 100px;
+}

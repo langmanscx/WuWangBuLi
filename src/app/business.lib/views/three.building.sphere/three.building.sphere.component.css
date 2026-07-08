@@ -1,0 +1,111 @@
+:host {
+    overflow: hidden;
+}
+
+div {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.building-box {
+    position: absolute;
+    top: 54vh;
+    right: 1vh;
+}
+
+.clipping-up {
+    display: block;
+    position: absolute;
+    bottom: 2vh;
+    left: 3vw;
+    width: 94vw;
+    height: 1vh;
+    z-index: 11;
+}
+
+.clipping-up-hide {
+    visibility: hidden;
+}
+
+.clipping-up-visible {
+    visibility: visible;
+}
+
+.clipping-front {
+    display: block;
+    position: absolute;
+    bottom: 50vh;
+    left: -43vh;
+    width: 90vh;
+    height: 1vh;
+    z-index: 11;
+    transform: rotate(270deg);
+
+    background-color: transparent;
+}
+
+.clipping-front-hide {
+    visibility: hidden;
+}
+
+.clipping-front-visible {
+    visibility: visible;
+}
+
+/* 隐藏滑块的框 */
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    background-color: transparent;
+    border: none;
+
+    background-color: #060637;
+    box-shadow: inset 0px -1px 1px 0px #ffffff;
+    border-radius: 2px;
+}
+
+.clipping-up-box {
+    position: absolute;
+    bottom: 2vh;
+    left: 2vh;
+    z-index: 11;
+    margin: 0;
+    transform: translate(-14px, 11px);
+    width: 32px;
+    height: 32px;
+    clip-path: polygon(150% 150%, 150% -50%, -50% 150%);
+}
+
+.clipping-front-box {
+    position: absolute;
+    left: 2vh;
+    bottom: 2vh;
+    z-index: 11;
+    margin: 0;
+    transform: translate(-14px, 11px);
+    width: 32px;
+    height: 32px;
+    clip-path: polygon(-50% -50%, 150% -50%, -50% 150%);
+}
+
+input[type="checkbox"] {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+input[type="checkbox"]:hover {
+    /* background-color: rgba(255, 255, 255, 127); */
+    box-shadow: 0px 0px 6px 3px rgb(249, 34, 62);
+}
+
+input[type="checkbox"]:active {
+    background-color: rgb(9, 21, 76);
+    box-shadow: inset 0px 0px 3px 0px white;
+}

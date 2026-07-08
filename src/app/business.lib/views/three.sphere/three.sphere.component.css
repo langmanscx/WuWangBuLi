@@ -1,0 +1,23 @@
+:host {
+    overflow: hidden;
+}
+
+div{
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+canvas{
+    width: 100%;
+    height: 100%;
+}
+
+.edit {
+    position: absolute;
+    top: 20px;
+    right: 2%;
+    color: white;
+    font-family: "宋体", "Arial", sans-serif;
+    font-size: 16px;
+}

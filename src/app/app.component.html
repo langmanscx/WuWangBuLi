@@ -1,0 +1,12 @@
+<div class="content" role="main">
+  
+  <app-three-building #threeBuilding class="monomer-view"
+    [ngClass]="{'view-unfold': !monomerViewFlod, 'view-fold': monomerViewFlod}"
+    (dblclick)="ViewChange('monomer')"></app-three-building>
+  <app-three-sphere #threeSphere class="monolayer-view"
+    [ngClass]="{'view-unfold': !monolayerViewFlod, 'view-fold': monolayerViewFlod}"
+    (dblclick)="ViewChange('monolayer')"></app-three-sphere>
+  <app-line-art-view #lineArtView class="details-view"
+    [ngClass]="{'view-unfold': !detailsViewFlod, 'view-fold': detailsViewFlod}"
+    (dblclick)="ViewChange('details')"></app-line-art-view>
+</div>

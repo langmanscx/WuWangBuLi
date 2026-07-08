@@ -1,0 +1,3 @@
+<div [ngClass]="{'list-unfold': !Flod, 'list-fold': Flod}" (mouseover)="OnOver()" (mouseout)="OnOut()">
+    <app-button *ngFor="let button of Buttons" [buttonKey]="button" (mouseover)="OnButtonOver()" (mouseout)="OnButtonOut()"></app-button>
+</div>

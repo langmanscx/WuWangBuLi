@@ -1,0 +1,11 @@
+<div>
+    <canvas class="render" #canvas1></canvas>
+    <canvas class="interanctive" #canvas2></canvas>
+    <select class="edit" (change)="OnSelectChange()" [(ngModel)]="EditName">
+        <option *ngFor="let option of NodeOptions" [value]="option">{{ option }}</option>
+    </select>
+    <a class="coordinate">{{Coordinate}}</a>
+
+    <app-message class="message"></app-message>
+    <app-button-list class="buttons"></app-button-list>
+</div>

@@ -1,0 +1,82 @@
+p,
+a,
+div,
+input {
+    color: white;
+    margin: 0;
+    font-size: 24px;
+    font-family: "宋体", "Arial", sans-serif;
+    border: none;
+    text-shadow: 6px 2px 2px rgb(0, 31, 63);
+}
+
+blockquote {
+    color: white;
+}
+
+.message-input {
+    display: block;
+    height: 44px;
+    box-shadow: 2px 2px 5px 0px rgba(0, 23, 54, 0.5);
+    overflow: hidden;
+}
+
+.prompt {
+    display: inline-block;
+    width: 76%;
+    height: 44px;
+    
+}
+
+.input-box {
+    display: inline-block;
+    width: 24%;
+    height: 44px;
+    background-color: rgba(10, 26, 63, 0.3);
+}
+
+.command-name {
+    display: inline-block;
+    padding: 6px;
+    padding-left: 12px;
+}
+
+.command-prompt {
+    display: inline-block;
+    padding: 6px;
+}
+
+.branch-select {
+    display: inline-block;
+    color: white;
+    animation: move 0.7s linear infinite;
+}
+
+.value-is-input {
+    display: inline-block;
+    color: rgb(127, 255, 191);
+}
+
+.value-no-input {
+    display: inline-block;
+    color: rgb(255, 127, 95);
+}
+
+.input-content {
+    display: inline-block;
+    padding: 6px;
+    width: 100%;
+    color: white;
+    background-color: transparent;
+    outline: none;
+}
+
+@keyframes move {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(10px);
+    }
+}
