@@ -1,27 +1,49 @@
-# Wuwangbuli
+# 介绍
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 16.2.0.
+这是 2024 年 2、3 月完成的 Demo，用于验证在“多视图”、“多图形框架”场景下如何搭建编辑环境。当时主要从事建筑行业的 CAD 二次开发和 BIM 建模相关工作，而 CAD 及天正插件是工程师常用的工具，因此项目中的部分交互参考了 CAD 和天正的操作方式。
 
-## Development server
+操作视频可查看项目中的 `演示2倍速.mp4`。
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+## 前端框架
 
-## Code scaffolding
+前端使用 Angular 框架，主要原因是 Angular 较早支持 TypeScript，编码风格更接近后端语言。
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+## 整体框架
 
-## Build
+整体分为核心库、扩展库和业务库三个层次：
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+- **核心库**：定义几何、数据、服务、控制器等接口和基类。
+- **扩展库**：进一步实现二维平面视图和三维视图。
+- **业务库**：组件层面的具体实现。
 
-## Running unit tests
+目前已经完成了数据管理、事件分发与管理的规范化，以及类似 CAD 的命令系统，为后续快速扩展打下了基础。
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+## 平面视图
 
-## Running end-to-end tests
+平面视图基于原生 Canvas 实现，支持部分类似 CAD 的操作，包括缩放、点选、框选、回退和命令机制。
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+## 三维视图
 
-## Further help
+三维视图包含两个视图：一个用于查看标准层，一个用于查看全局。两者均使用 Three.js 实现，所有数据全局唯一，可同步修改。
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+## 纹理资源服务
+
+项目中的 `imgs/` 目录存放了用于三维渲染的纹理图片资源，包含金属、木纹、混凝土、灰泥等常见建筑材质，供 Three.js 材质贴图使用。
+
+`image-server.js` 是一个基于 Node.js 的本地纹理图片服务器，运行后会监听 `8001` 端口，从 `imgs/` 目录提供图片资源访问，并做了基本的目录遍历防护。
+
+---
+
+# 其他
+
+本项目使用 [Angular CLI](https://github.com/angular/angular-cli) 16.2.0 版本生成。
+
+## 开发环境启动
+
+运行 `node image-server.js` 启动纹理服务，可通过 `http://localhost:8001/<图片路径>` 访问 `imgs/` 目录下的纹理图片。例如：“http://localhost:8001/grey_metal_01/grey_metal_01_2k.jpg”
+
+运行 `ng serve` 或 `npm run start` 启动开发服务，然后访问 `http://localhost:4200/`。修改源文件后，应用会自动重新加载。
+
+## 构建
+
+运行 `ng build` 构建项目，构建产物将存放在 `dist/` 目录下。
